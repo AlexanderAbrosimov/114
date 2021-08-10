@@ -13,14 +13,15 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void createUsersTable() {
+        String mysql = "CREATE TABLE IF NOT EXISTS users (" +
+                "id INT NOT NULL AUTO_INCREMENT," +
+                " name VARCHAR(30) NOT NULL," +
+                "  lastName VARCHAR(30) NOT NULL," +
+                " age INT NOT NULL, PRIMARY KEY (id))";
         try (Statement statement = Util.getConnection().createStatement()) {
-            statement.execute("CREATE TABLE IF NOT EXISTS users (" +
-                    "id INT NOT NULL AUTO_INCREMENT," +
-                    " name VARCHAR(30) NOT NULL," +
-                    "  lastName VARCHAR(30) NOT NULL," +
-                    " age INT NOT NULL, PRIMARY KEY (id)");
-        } catch (SQLException ignore) {
-            System.out.println("1");
+            statement.execute(mysql);
+        } catch (SQLException e) {
+            System.out.println("createError");
         }
 
     }
@@ -28,7 +29,8 @@ public class UserDaoJDBCImpl implements UserDao {
     public void dropUsersTable() {
         try (Statement statement = Util.getConnection().createStatement()) {
             statement.executeUpdate("DROP TABLE IF EXISTS users");
-        } catch (SQLException ignored) {
+        } catch (SQLException e) {
+            System.out.println("dropError");
         }
     }
 
@@ -36,17 +38,24 @@ public class UserDaoJDBCImpl implements UserDao {
         String mysql = "INSERT INTO users (name, lastName, age) Values (?, ?, ?)";
         try (PreparedStatement preparedStatement = Util.getConnection().prepareStatement(mysql)) {
             preparedStatement.setString(1, name);
-            preparedStatement.setString(1, lastName);
+            preparedStatement.setString(2, lastName);
             preparedStatement.setByte(3, age);
             preparedStatement.execute();
             System.out.printf("User с именем – %s добавлен в базу данных\n", name);
 
-        } catch (SQLException ignored) {
-            System.out.println("Error");
+        } catch (SQLException e) {
+            System.out.println("saveError");
         }
     }
 
     public void removeUserById(long id) {
+        String mysql = "DELETE FROM users WHERE id = ?";
+        try (PreparedStatement preparedStatement = Util.getConnection().prepareStatement(mysql)) {
+            preparedStatement.setLong(1, id);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            System.out.println("removeError");
+        }
 
     }
 
@@ -55,15 +64,27 @@ public class UserDaoJDBCImpl implements UserDao {
         try (Statement statement = Util.getConnection().createStatement()) {
             ResultSet resultSet = statement.executeQuery("select * from users");
             while (resultSet.next()) {
+                User user = new User();
+                user.setId(resultSet.getLong("id"));
+                user.setName(resultSet.getString("name"));
+                user.setLastName(resultSet.getString("lastName"));
+                user.setAge(resultSet.getByte("age"));
+                users.add(user);
             }
-        } catch (SQLException ignored) {
-            System.out.println("3");
+        } catch (SQLException e) {
+            System.out.println("getError");
         }
 
         return users;
     }
 
     public void cleanUsersTable() {
+        try (Statement statement = Util.getConnection().createStatement()) {
+            statement.execute("DELETE FROM users");
+        } catch (SQLException e) {
+            System.out.println("cleanError");
+        }
+
 
     }
 }
