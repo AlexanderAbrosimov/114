@@ -29,7 +29,7 @@ public class Util {
                 settings.put("hibernate.connection.username", userName);
                 settings.put("hibernate.connection.password", pass);
                 settings.put("hibernate.show_sql", "true");
-                settings.put("hibernate.hbm2ddl.auto", "update");
+                settings.put("hibernate.hbm2ddl.auto", "create");
 
                 registryBuilder.applySettings(settings);
                 standardServiceRegistry = registryBuilder.build();
